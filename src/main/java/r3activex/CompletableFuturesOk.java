@@ -1,11 +1,10 @@
 package r3activex;
 
+import hu.akarnokd.rxjava2.interop.CompletableInterop;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
-import io.reactivex.MaybeObserver;
 import io.reactivex.MaybeSource;
 import io.reactivex.subjects.CompletableSubject;
-import io.reactivex.subjects.MaybeSubject;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -13,7 +12,7 @@ import java.util.concurrent.CompletionStage;
 public class CompletableFuturesOk {
 
    public static void main(String[] args) throws Exception {
-      Completable completable = futureToCompletable(createFuture1());
+      Completable completable = CompletableInterop.fromFuture(createFuture1());
       Maybe<Integer> maybe = completable.andThen(
          (MaybeSource<Integer>) observer -> {
             System.out.println("Subscribe to maybe source...");
@@ -57,40 +56,5 @@ public class CompletableFuturesOk {
          return 1;
       });
    }
-
-   static Completable futureToCompletable(CompletionStage<?> future) {
-      CompletableSubject cs = CompletableSubject.create();
-
-      future.whenComplete(
-         (v, t) -> {
-            if (t != null) {
-               System.out.println("Completed future with error: " + t);
-               cs.onError(t);
-            }
-            else {
-               System.out.println("Completed future");
-               cs.onComplete();
-            }
-         }
-      );
-
-      return cs;
-   }
-
-//   static <T> Maybe<T> futureToMaybe(CompletionStage<T> future) {
-//      MaybeSubject<T> ms = MaybeSubject.create();
-//
-//      future.whenComplete(
-//         (v, t) -> {
-//            if (t != null)
-//               ms.onError(t);
-//            else if (v != null)
-//               ms.onSuccess(v);
-//            else
-//               ms.onComplete();
-//         }
-//      );
-//      return ms;
-//   }
 
 }
